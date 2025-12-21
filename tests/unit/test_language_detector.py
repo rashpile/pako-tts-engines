@@ -164,6 +164,7 @@ class TestSynthesisWithLanguageDetection:
     ) -> None:
         """Synthesis detects language when not explicitly provided."""
         import os
+
         os.environ["CONFIG_PATH"] = minimal_config_file
 
         from app.config import load_config

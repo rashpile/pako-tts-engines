@@ -172,9 +172,7 @@ class LanguageDetectorService:
             )
             return None
 
-    def detect_with_confidence(
-        self, text: str
-    ) -> tuple[str | None, float]:
+    def detect_with_confidence(self, text: str) -> tuple[str | None, float]:
         """Detect language with confidence score.
 
         Args:
