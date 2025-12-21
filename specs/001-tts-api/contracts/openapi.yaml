@@ -1,0 +1,394 @@
+openapi: 3.1.0
+info:
+  title: TTS API Service
+  description: |
+    API service for local Text-to-Speech synthesis with multiple engine backends.
+    Provides an ElevenLabs-compatible interface for TTS operations.
+  version: 1.0.0
+  contact:
+    name: pako-tts-engines
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+
+paths:
+  /api/v1/health:
+    get:
+      summary: Health check
+      description: Returns service health status and available engines
+      operationId: getHealth
+      tags:
+        - Health
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /api/v1/models:
+    get:
+      summary: List available models
+      description: Returns all available TTS models with their capabilities
+      operationId: listModels
+      tags:
+        - Models
+      responses:
+        "200":
+          description: List of available models
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModelsListResponse"
+
+  /api/v1/models/{model_id}:
+    get:
+      summary: Get model details
+      description: Returns detailed information about a specific model including parameter schema
+      operationId: getModel
+      tags:
+        - Models
+      parameters:
+        - name: model_id
+          in: path
+          required: true
+          description: Unique model identifier
+          schema:
+            type: string
+            example: coqui-english
+      responses:
+        "200":
+          description: Model details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModelDetailResponse"
+        "404":
+          description: Model not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/tts:
+    post:
+      summary: Synthesize speech
+      description: |
+        Convert text to speech using the specified model.
+        Returns audio data in the requested format.
+      operationId: synthesize
+      tags:
+        - TTS
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SynthesisRequest"
+      responses:
+        "200":
+          description: Synthesized audio
+          headers:
+            X-Model-Id:
+              description: Model used for synthesis
+              schema:
+                type: string
+            X-Language:
+              description: Language used for synthesis
+              schema:
+                type: string
+            X-Duration-Ms:
+              description: Audio duration in milliseconds
+              schema:
+                type: integer
+            X-Sample-Rate:
+              description: Audio sample rate in Hz
+              schema:
+                type: integer
+          content:
+            audio/wav:
+              schema:
+                type: string
+                format: binary
+            audio/mpeg:
+              schema:
+                type: string
+                format: binary
+        "413":
+          description: Text too long
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Service busy or model unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "504":
+          description: Synthesis timeout
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /openapi.json:
+    get:
+      summary: OpenAPI specification
+      description: Returns the OpenAPI specification for this API in JSON format
+      operationId: getOpenApiSpec
+      tags:
+        - Documentation
+      responses:
+        "200":
+          description: OpenAPI specification
+          content:
+            application/json:
+              schema:
+                type: object
+                description: OpenAPI 3.1.0 specification document
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - engines
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+          description: Overall service health status
+        engines:
+          type: array
+          items:
+            $ref: "#/components/schemas/EngineHealth"
+        version:
+          type: string
+          description: Service version
+        uptime_seconds:
+          type: integer
+          description: Service uptime in seconds
+
+    EngineHealth:
+      type: object
+      required:
+        - name
+        - status
+        - models_count
+      properties:
+        name:
+          type: string
+          description: Engine name
+        status:
+          type: string
+          enum: [available, unavailable, loading]
+        models_count:
+          type: integer
+          description: Number of available models
+        error:
+          type: string
+          description: Error message if unavailable
+
+    ModelsListResponse:
+      type: object
+      required:
+        - models
+      properties:
+        models:
+          type: array
+          items:
+            $ref: "#/components/schemas/ModelSummary"
+        default_model_id:
+          type: string
+          description: ID of the default model
+
+    ModelSummary:
+      type: object
+      required:
+        - id
+        - name
+        - engine
+        - languages
+        - is_available
+      properties:
+        id:
+          type: string
+          description: Unique model identifier
+          example: coqui-english
+        name:
+          type: string
+          description: Human-readable model name
+          example: Coqui English (LJSpeech)
+        engine:
+          type: string
+          description: Engine type
+          enum: [coqui, silero]
+        languages:
+          type: array
+          items:
+            type: string
+          description: Supported language codes
+          example: [en-US, en-GB]
+        is_available:
+          type: boolean
+          description: Whether the model is currently available
+        is_default:
+          type: boolean
+          description: Whether this is the default model
+
+    ModelDetailResponse:
+      type: object
+      required:
+        - id
+        - name
+        - engine
+        - languages
+        - parameters
+        - is_available
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        engine:
+          type: string
+          enum: [coqui, silero]
+        languages:
+          type: array
+          items:
+            type: string
+        default_language:
+          type: string
+          description: Default language if not specified
+        sample_rate:
+          type: integer
+          description: Output audio sample rate in Hz
+          example: 22050
+        parameters:
+          type: array
+          items:
+            $ref: "#/components/schemas/ParameterDefinition"
+        is_available:
+          type: boolean
+        is_default:
+          type: boolean
+
+    ParameterDefinition:
+      type: object
+      required:
+        - name
+        - type
+        - description
+        - default
+      properties:
+        name:
+          type: string
+          description: Parameter name
+          example: speed
+        type:
+          type: string
+          enum: [float, int, string, bool]
+        description:
+          type: string
+          description: Human-readable description
+          example: Speech rate multiplier
+        default:
+          description: Default value
+          example: 1.0
+        min_value:
+          type: number
+          description: Minimum value (for numeric types)
+          example: 0.5
+        max_value:
+          type: number
+          description: Maximum value (for numeric types)
+          example: 2.0
+        allowed_values:
+          type: array
+          description: Allowed values (for enum types)
+          items: {}
+
+    SynthesisRequest:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+          description: Text to synthesize (1-5000 characters)
+          minLength: 1
+          maxLength: 5000
+          example: Hello, this is a test of the text to speech system.
+        model_id:
+          type: string
+          description: Model to use (uses default if not specified)
+          example: coqui-english
+        language:
+          type: string
+          description: Language code (uses model default if not specified)
+          example: en-US
+        output_format:
+          type: string
+          enum: [wav, mp3]
+          default: wav
+          description: Audio output format
+        parameters:
+          type: object
+          additionalProperties: true
+          description: Model-specific parameters
+          example:
+            speed: 1.0
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              description: Error code
+              enum:
+                - VALIDATION_ERROR
+                - TEXT_TOO_LONG
+                - TEXT_EMPTY
+                - MODEL_NOT_FOUND
+                - MODEL_UNAVAILABLE
+                - LANGUAGE_NOT_SUPPORTED
+                - INVALID_PARAMETER
+                - SYNTHESIS_FAILED
+                - SERVICE_BUSY
+                - SYNTHESIS_TIMEOUT
+            message:
+              type: string
+              description: Human-readable error message
+            details:
+              type: object
+              additionalProperties: true
+              description: Additional error details
+
+tags:
+  - name: Health
+    description: Service health and status
+  - name: Models
+    description: Model discovery and information
+  - name: TTS
+    description: Text-to-speech synthesis
+  - name: Documentation
+    description: API documentation and specification
