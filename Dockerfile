@@ -20,14 +20,16 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 # Copy dependency files and README (required by pyproject.toml)
 COPY pyproject.toml uv.lock* README.md ./
 
-# Install dependencies
-RUN uv sync --frozen --no-dev --no-install-project
+# Install dependencies with CPU-only PyTorch (saves ~1.5GB)
+RUN uv sync --frozen --no-dev --no-install-project \
+    --extra-index-url https://download.pytorch.org/whl/cpu
 
 # Copy source code
 COPY src ./src
 
 # Install the project
-RUN uv sync --frozen --no-dev
+RUN uv sync --frozen --no-dev \
+    --extra-index-url https://download.pytorch.org/whl/cpu
 
 FROM python:3.11-slim
 

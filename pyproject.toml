@@ -12,7 +12,6 @@ dependencies = [
     "structlog>=24.0",
     "TTS>=0.22",
     "torch>=2.0",
-    "torchaudio>=2.0",
     "lingua-language-detector>=2.0",
 ]
 
