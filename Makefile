@@ -31,7 +31,7 @@ typecheck:
 
 # Run the application
 run:
-	uv run app
+	uv run pako-tts-engines
 
 # Clean build artifacts
 clean:

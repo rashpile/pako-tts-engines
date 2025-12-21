@@ -1,0 +1,28 @@
+server:
+  host: "0.0.0.0"
+  port: 8000
+  max_queue_size: 100
+  max_text_length: 5000
+  synthesis_timeout: 30
+
+engines:
+  - name: coqui-english
+    type: coqui
+    model: tts_models/en/ljspeech/vits
+    languages: [en-US, en-GB]
+    default: true
+
+  - name: coqui-romanian
+    type: coqui
+    model: tts_models/ro/cv/vits
+    languages: [ro-RO]
+
+  - name: silero-russian
+    type: silero
+    model: v4_ru
+    speaker: xenia
+    languages: [ru-RU]
+
+logging:
+  level: info
+  format: json
