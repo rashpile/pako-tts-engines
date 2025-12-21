@@ -1,0 +1,27 @@
+services:
+  tts-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount config file
+      - ./config.yaml:/app/config.yaml:ro
+      # Cache TTS models to avoid re-downloading
+      - tts-models:/root/.local/share/tts
+    environment:
+      - CONFIG_PATH=/app/config.yaml
+      # Uncomment for GPU support
+      # - CUDA_VISIBLE_DEVICES=0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+volumes:
+  tts-models:
+    name: pako-tts-models

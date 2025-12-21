@@ -21,10 +21,20 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Install curl for healthcheck
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copy virtual environment from builder
 COPY --from=builder /app/.venv /app/.venv
 
+# Copy default config
+COPY config.yaml ./config.yaml
+
 # Set PATH to use venv
 ENV PATH="/app/.venv/bin:$PATH"
+ENV CONFIG_PATH="/app/config.yaml"
+
+EXPOSE 8000
 
 ENTRYPOINT ["python", "-m", "app.main"]

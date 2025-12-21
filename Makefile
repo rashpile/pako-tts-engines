@@ -49,8 +49,8 @@ build:
 
 # Docker build
 docker-build:
-	docker build -t app:latest .
+	docker build -t pako-tts-engines:latest .
 
 # Docker run
 docker-run:
-	docker run -p 8000:8000 app:latest
+	docker run -p 8000:8000 pako-tts-engines:latest
