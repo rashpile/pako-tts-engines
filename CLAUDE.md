@@ -12,3 +12,10 @@
 - SQLAlchemy 2.0 with async support
 - pytest with async fixtures and parametrization
 - Performance profiling and optimization techniques
+
+## Active Technologies
+- Python 3.11+ + FastAPI, Pydantic v2, TTS (Coqui), torch, PyYAML, structlog (001-tts-api)
+- File-based audio cache (temporary synthesis outputs) (001-tts-api)
+
+## Recent Changes
+- 001-tts-api: Added Python 3.11+ + FastAPI, Pydantic v2, TTS (Coqui), torch, PyYAML, structlog
