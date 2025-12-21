@@ -191,8 +191,16 @@ class CoquiEngine(TTSEngine):
                 speed=speed,
             )
 
+            # Check if this is a multilingual model
+            is_multilingual = "multilingual" in self._config.model
+
             # Synthesize to numpy array
-            wav = self._tts.tts(text=text, speed=speed)
+            if is_multilingual:
+                # Multilingual models need language parameter (ISO 639-1 code)
+                lang_code = effective_language.split("-")[0]  # "ru-RU" -> "ru"
+                wav = self._tts.tts(text=text, language=lang_code, speed=speed)
+            else:
+                wav = self._tts.tts(text=text, speed=speed)
 
             # Convert to WAV bytes
             audio_bytes = self._numpy_to_wav(wav, self._sample_rate)

@@ -17,11 +17,10 @@ engines:
     model: tts_models/ro/cv/vits
     languages: [ro-RO]
 
-  - name: silero-russian
-    type: silero
-    model: v4_ru
-    speaker: xenia
-    languages: [ru-RU]
+  - name: coqui-slavic
+    type: coqui
+    model: tts_models/uk/mai/vits
+    languages: [ru-RU, uk-UA, be-BY]
 
 logging:
   level: info
