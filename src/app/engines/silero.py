@@ -115,6 +115,7 @@ class SileroEngine(TTSEngine):
                 model="silero_tts",
                 language="ru",
                 speaker=self._config.model,  # e.g., "v4_ru"
+                trust_repo=True,
             )
             self._is_available = True
 
