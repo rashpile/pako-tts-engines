@@ -1,5 +1,6 @@
 """Synthesis service for TTS operations."""
 
+import io
 import time
 
 import structlog
@@ -8,6 +9,7 @@ from app.api.middleware.logging import record_synthesis
 from app.config import get_config
 from app.engines.base import TTSEngine
 from app.engines.registry import get_registry
+from app.models.engine import OutputFormat
 from app.models.errors import APIError, ErrorCode
 from app.models.request import SynthesisRequest
 from app.models.response import SynthesisResponse
@@ -194,10 +196,14 @@ class SynthesisService:
         # Calculate duration
         duration_ms = int((time.perf_counter() - start_time) * 1000)
 
-        # Calculate audio duration from WAV data
+        # Calculate audio duration from WAV data (before conversion)
         audio_duration_ms = self._calculate_audio_duration(
             audio_data, engine.sample_rate
         )
+
+        # Convert to MP3 if requested
+        if request.output_format == OutputFormat.MP3:
+            audio_data = self._convert_to_mp3(audio_data)
 
         # Record metrics
         record_synthesis(duration_ms)
@@ -249,6 +255,24 @@ class SynthesisService:
             return int(duration_seconds * 1000)
 
         return 0
+
+    def _convert_to_mp3(self, wav_data: bytes) -> bytes:
+        """Convert WAV bytes to MP3 format.
+
+        Args:
+            wav_data: WAV audio bytes.
+
+        Returns:
+            MP3 audio bytes.
+        """
+        from pydub import AudioSegment
+
+        wav_buffer = io.BytesIO(wav_data)
+        audio = AudioSegment.from_wav(wav_buffer)
+
+        mp3_buffer = io.BytesIO()
+        audio.export(mp3_buffer, format="mp3", bitrate="192k")
+        return mp3_buffer.getvalue()
 
 
 # Global service instance

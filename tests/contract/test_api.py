@@ -47,6 +47,18 @@ class TestTTSEndpoint:
         assert response.status_code == 200
         assert response.headers["content-type"] == "audio/wav"
 
+    def test_tts_returns_mp3_format(self, test_client: TestClient) -> None:
+        """TTS endpoint returns MP3 audio when requested."""
+        response = test_client.post(
+            "/api/v1/tts",
+            json={"text": "Hello world", "output_format": "mp3"},
+        )
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "audio/mpeg"
+        # MP3 files start with ID3 tag or MPEG frame sync
+        content = response.content
+        assert content[:3] == b"ID3" or content[:2] == b"\xff\xfb"
+
     def test_tts_returns_metadata_headers(self, test_client: TestClient) -> None:
         """TTS endpoint returns metadata in headers."""
         response = test_client.post(

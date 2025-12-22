@@ -35,9 +35,10 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install runtime dependencies for torchaudio and Coqui TTS
+# Install runtime dependencies for torchaudio, Coqui TTS, and audio conversion
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
+    ffmpeg \
     libsndfile1 \
     libgomp1 \
     espeak-ng \
