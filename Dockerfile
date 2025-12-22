@@ -35,8 +35,12 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install curl for healthcheck
-RUN apt-get update && apt-get install -y --no-install-recommends curl \
+# Install runtime dependencies for torchaudio and Coqui TTS
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    libsndfile1 \
+    libgomp1 \
+    espeak-ng \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy virtual environment from builder
