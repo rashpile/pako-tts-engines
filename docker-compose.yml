@@ -1,8 +1,6 @@
 services:
   tts-api:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/rashpile/pako-tts-engines
     ports:
       - "8000:8000"
     volumes:
