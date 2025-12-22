@@ -42,6 +42,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl \
 # Copy virtual environment from builder
 COPY --from=builder /app/.venv /app/.venv
 
+# Copy source code (required by editable install .pth file)
+COPY --from=builder /app/src /app/src
+
 # Copy default config
 COPY config.yaml ./config.yaml
 

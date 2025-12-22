@@ -1,6 +1,7 @@
 services:
   tts-api:
-    image: ghcr.io/rashpile/pako-tts-engines
+#    image: ghcr.io/rashpile/pako-tts-engines
+    image: pako-tts-engines
     ports:
       - "8000:8000"
     volumes:
