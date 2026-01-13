@@ -265,7 +265,7 @@ class SynthesisService:
         Returns:
             MP3 audio bytes.
         """
-        from pydub import AudioSegment
+        from pydub import AudioSegment  # type: ignore[import-untyped]
 
         wav_buffer = io.BytesIO(wav_data)
         audio = AudioSegment.from_wav(wav_buffer)
