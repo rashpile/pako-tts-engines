@@ -17,6 +17,22 @@ from app.engines.base import TTSEngine
 from app.engines.registry import get_registry
 
 
+class HealthCheckFilter(logging.Filter):
+    """Filter to suppress health check endpoint logs."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        """Filter out health check requests.
+
+        Args:
+            record: Log record to check.
+
+        Returns:
+            False to suppress the log, True to keep it.
+        """
+        message = record.getMessage()
+        return "/health" not in message
+
+
 def configure_logging(level: str = "info", format: str = "json") -> None:
     """Configure structured logging.
 
@@ -26,6 +42,10 @@ def configure_logging(level: str = "info", format: str = "json") -> None:
     """
     # Convert level string to logging constant
     log_level = getattr(logging, level.upper(), logging.INFO)
+
+    # Filter health check requests from uvicorn access logs
+    uvicorn_access_logger = logging.getLogger("uvicorn.access")
+    uvicorn_access_logger.addFilter(HealthCheckFilter())
 
     # Configure structlog
     processors = [
