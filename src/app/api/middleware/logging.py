@@ -33,8 +33,11 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         # Add request ID to request state for access in handlers
         request.state.request_id = request_id
 
+        # Use DEBUG level for health endpoint to reduce log noise
+        log_fn = logger.debug if request.url.path == "/health" else logger.info
+
         # Log request
-        logger.info(
+        log_fn(
             "request.received",
             request_id=request_id,
             method=request.method,
@@ -50,7 +53,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         duration_ms = (time.perf_counter() - start_time) * 1000
 
         # Log response
-        logger.info(
+        log_fn(
             "request.completed",
             request_id=request_id,
             method=request.method,
