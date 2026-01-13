@@ -34,7 +34,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         request.state.request_id = request_id
 
         # Use DEBUG level for health endpoint to reduce log noise
-        log_fn = logger.debug if request.url.path == "/health" else logger.info
+        log_fn = logger.debug if request.url.path.endswith("/health") else logger.info
 
         # Log request
         log_fn(
